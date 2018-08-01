@@ -42,6 +42,11 @@ public class Server extends Service {
         }
 
         private int add(int a, int b) {
+            int id1 = App.getInstance().getID();
+            Log.d("chj", "id in server before set:" + id1);
+            App.getInstance().setID(20);
+            int id = App.getInstance().getID();
+            Log.d("chj", "id in server after set:" + id);
             return a + b;
         }
     }

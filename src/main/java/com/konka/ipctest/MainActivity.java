@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -70,8 +71,11 @@ public class MainActivity extends AppCompatActivity {
                 data.writeInt(3);
 
                 try {
+                    int id = App.getInstance().getID();
+                    Log.d("chj", "ID in main:" + id);
                     remoteAddService.transact(1, data, reply, 0);
                     Toast.makeText(this, "result :" + reply.readInt(), Toast.LENGTH_SHORT).show();
+                    Log.d("chj", "id in main after server set:" + App.getInstance().getID());
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 } finally {
