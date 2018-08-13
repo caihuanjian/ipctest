@@ -8,6 +8,8 @@ import android.util.Log;
 
 import java.util.List;
 
+import io.realm.Realm;
+
 /**
  * Created by HwanJ.Choi on 2018-8-1.
  */
@@ -26,6 +28,14 @@ public class App extends Application {
         for (ActivityManager.RunningAppProcessInfo info : runningAppProcesses) {
             Log.d("chj", "pid:" + info.pid + ",process:" + info.processName);
         }
+
+        Realm.init(this);
+
+//        Stetho.initialize(
+//                Stetho.newInitializerBuilder(this)
+//                        .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+//                        .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
+//                        .build());
     }
 
     @Override

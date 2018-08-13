@@ -3,19 +3,30 @@ package com.konka.ipctest.ipc;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by HwanJ.Choi on 2018-7-5.
  */
-public class Book implements Parcelable {
+public class Book extends RealmObject implements Parcelable {
 
+    @PrimaryKey
     private int id;
     private String name;
     private String author;
+
+    private long time;
+
+    public Book() {
+
+    }
 
     public Book(int id, String name, String author) {
         this.id = id;
         this.name = name;
         this.author = author;
+        time = System.currentTimeMillis();
     }
 
     protected Book(Parcel in) {
@@ -51,5 +62,9 @@ public class Book implements Parcelable {
     @Override
     public String toString() {
         return "[id:" + id + ",name:" + name + ",author:" + author + "]";
+    }
+
+    public int getId() {
+        return id;
     }
 }

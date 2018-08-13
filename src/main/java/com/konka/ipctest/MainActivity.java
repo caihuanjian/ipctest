@@ -9,6 +9,8 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -21,16 +23,27 @@ import com.konka.ipctest.ipc.IBookManager;
 import java.util.List;
 import java.util.Random;
 
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 public class MainActivity extends AppCompatActivity {
     private IBinder remoteAddService;
 
     private IBookManager bookManager;
     private Random random = new Random();
+    private RecyclerView mRecycleView;
+    private BookAdapter bookAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mRecycleView = findViewById(R.id.rv);
+        mRecycleView.setLayoutManager(new LinearLayoutManager(this));
+        bookAdapter = new BookAdapter();
+        mRecycleView.setAdapter(bookAdapter);
         ServiceConnection serviceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -90,7 +103,39 @@ public class MainActivity extends AppCompatActivity {
                 List<Book> bookList = bookManager.getBookList();
                 if (bookList != null)
                     Toast.makeText(this, bookList.toString(), Toast.LENGTH_SHORT).show();
+
                 break;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<Book> all = realm.where(Book.class).findAll().sort("time");
+        bookAdapter.setData(all);
+        all.addChangeListener(new OrderedRealmCollectionChangeListener<RealmResults<Book>>() {
+            @Override
+            public void onChange(RealmResults<Book> books, OrderedCollectionChangeSet changeSet) {
+//                bookAdapter.notifyDataSetChanged();
+                books.sort("time");
+                OrderedCollectionChangeSet.Range[] deletionRanges = changeSet.getDeletionRanges();
+                for (OrderedCollectionChangeSet.Range r : deletionRanges) {
+                    bookAdapter.notifyItemRangeRemoved(r.startIndex, r.length);
+                    Log.d("chj", "delete:" + r.startIndex + ":length" + r.length);
+                }
+                int[] insertions = changeSet.getInsertions();
+                for (Integer i : insertions) {
+                    Log.d("chj", "insert:" + i + ":length" );
+                    bookAdapter.notifyItemInserted(i);
+                }
+                OrderedCollectionChangeSet.Range[] changeRanges = changeSet.getChangeRanges();
+                for (OrderedCollectionChangeSet.Range range : changeRanges) {
+                    bookAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+                    Log.d("chj", "changeRanges:" + range.startIndex + ":length" + range.length);
+                }
+            }
+
+        });
     }
 }

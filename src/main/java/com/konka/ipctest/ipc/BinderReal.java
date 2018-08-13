@@ -12,6 +12,9 @@ import android.util.Log;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 /**
  * Created by HwanJ.Choi on 2018-7-5.
  * 远程binder实体
@@ -35,14 +38,21 @@ public class BinderReal extends Binder implements IBookManager {
 
     @Override
     public void addBook(Book book) {
-        if (book != null)
-            sBooks.add(book);
-        Log.d("addbook:", book.toString());
+
+        if (book != null) {
+            Realm realm = Realm.getDefaultInstance();
+            realm.beginTransaction();
+            realm.copyToRealm(book);
+            realm.commitTransaction();
+            Log.d("addbook:", book.toString());
+        }
     }
 
     @Override
     public List<Book> getBookList() {
-        return sBooks;
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<Book> books = realm.where(Book.class).findAll();
+        return books;
     }
 
     @Override
@@ -105,7 +115,6 @@ public class BinderReal extends Binder implements IBookManager {
         }
 
         /**
-         *
          * 这里的代码还是在客户端线程执行
          */
         @Override
